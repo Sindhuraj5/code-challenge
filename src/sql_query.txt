@@ -1,0 +1,46 @@
+# get total expenditure for each customer
+with customer_expenditure as (
+	select
+		customer_id,
+		sum(cast(substring_index(total_amount,' ',1) as decimal(12,2))) as customer_expense
+    from orders
+    group by customer_id
+),
+# get total visits for each customer
+customer_total_visits as (
+	select
+		customer_id,
+        count(*) as customer_total_visits
+    from visits
+    group by customer_id
+),
+# group by week and year and get visits for each customer
+customer_weekly_visits as (
+	select
+		customer_id,
+        avg(customer_weekly_visits) as visits_per_week
+    from
+		(select
+			customer_id,
+            week(event_time,0),
+            year(event_time),
+            count(*) as customer_weekly_visits
+		from visits
+		group by customer_id, week(event_time,0), year(event_time)
+        ) as temp1
+	group by customer_id
+)
+#calculate ltv
+select
+	id,
+    ((customer_expense/customer_total_visits)*visits_per_week)*52*10 as ltv
+from customers c
+left join customer_expenditure ce
+	on c.id = ce.customer_id
+left join customer_total_visits ctv
+	on c.id = ctv.customer_id
+left join customer_weekly_visits cwv
+	on cwv.customer_id = c.id
+order by ltv desc
+limit 10
+;

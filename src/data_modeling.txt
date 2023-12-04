@@ -1,0 +1,76 @@
+CREATE TABLE customers  (
+	type varchar(255) not null,
+	id varchar(255) not null,
+    verb varchar(255) not null,
+    event_time datetime not null,
+	last_name varchar(255),
+    adr_city varchar(255),
+    adr_state varchar(255),
+	primary key(id)
+);
+
+CREATE TABLE orders  (
+	type varchar(255) not null,
+	id varchar(255) not null,
+    verb varchar(255) not null,
+    event_time datetime not null,
+	customer_id varchar(255) not null,
+    total_amount decimal(12,2) not null,
+    PRIMARY KEY(id),
+    FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
+CREATE TABLE sitevisits  (
+	type varchar(255) not null,
+	id varchar(255) not null,
+    verb varchar(255) not null,
+    event_time datetime not null,
+	customer_id varchar(255) not null,
+    tags varchar(255),
+    PRIMARY KEY(id),
+    FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
+CREATE TABLE images  (
+	type varchar(255) not null,
+	id varchar(255) not null,
+    verb varchar(255) not null,
+    event_time datetime not null,
+	customer_id varchar(255) not null,
+    camera_make varchar(255),
+    camera_model varchar(255),
+    PRIMARY KEY(id),
+    FOREIGN KEY(customer_id) REFERENCES customers(id)
+);
+
+INSERT INTO customers (type, verb, id, event_time, last_name, adr_city, adr_state) values ("CUSTOMER", "NEW", "96f55c7d8f42", "2017-01-06T12:46:46", "Smith", "Middletown","AK");
+INSERT INTO orders (type, verb, id, event_time, customer_id, total_amount) values ("ORDER", "NEW", "68d84e5d1a43", "2017-01-06T12:46:46", "96f55c7d8f42", "12.00 USD");
+INSERT INTO sitevisits (type, verb, id, event_time, customer_id, tags) values ("SITE_VISIT", "NEW", "ac05e815602f", "2017-01-06T12:46:46", "96f55c7d8f42", "");
+INSERT INTO images (type, verb, id, event_time, customer_id, camera_make, camera_model) values ("IMAGE", "UPLOAD", "d8ede43b1d1f", "2017-01-06T12:46:46", "96f55c7d8f42", "NIKON","ASFF);
+
+
+# get amount for each customer
+SELECT
+    c.id,
+    sum(cast(substring_index(o.total_amount,' ',1) as decimal(12,2))) as total_amount
+FROM customers c LEFT JOIN orders o
+ON c.id = o.customer_id
+GROUP BY c.id;
+
+#get weekly expenditure for each customer
+select
+    customer_id,
+    week(event_time,0),
+    year(event_time),
+    sum(cast(substring_index(total_amount,' ',1) as decimal(12,2))) as customer_weekly_amount
+from orders
+group by customer_id, week(event_time,0), year(event_time);
+
+#get weekly visits for each customer
+select
+    customer_id,
+    week(event_time,0),
+    year(event_time),
+    count(*) as customer_weekly_visits
+from sitevisits
+group by customer_id, week(event_time,0), year(event_time)

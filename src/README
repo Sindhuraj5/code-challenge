@@ -1,1 +1,16 @@
-Your source files reside in this directory
+## EXECUTE CODE
+pip install -r requirements.txt
+python customer_ltv.py
+pytests tests
+
+## Assumptions
+
+1. Event that doesn't belong to any of the provided event types will be ignored and not ingested
+2. Events without required fields will be ignored and not ingested
+3. If events doesn't come with optional fields, those fields will be ingested with default values
+4. since events are saved as dictionary with their keys, no check is required on 'new' or 'update' verb. All data will be updated if another event with same key occurs
+5. 'UPDATE' updates/replaces all fields 
+6. If amount is not in the format of 'float string' or 'digit string' then ignored
+7. If event_time is not of the dtetime timezone format, its ignored
+8. LTV is calculated for the weeks the customer was active. Not generic 52 weeks
+

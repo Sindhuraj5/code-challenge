@@ -1,1 +1,4 @@
-Your output data will end up here
+{
+  "96f55c7d8f42": 8325.199999999999,
+  "96f55c7d8f43": 6992.266666666667
+}
